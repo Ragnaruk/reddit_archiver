@@ -137,7 +137,7 @@ def subreddits(update, context):
     return 1
 
 
-@bot_step()
+@bot_step(save_step=False)
 def subreddit_posts(update, context):
     keyboard = [
         ["Next"],
