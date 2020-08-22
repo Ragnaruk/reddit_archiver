@@ -97,14 +97,16 @@ def add_posts_to_db(db: Table, posts: deque) -> tuple:
 
     for post in reversed(posts):
         if not is_post_in_db(db, post):
-            db.insert(
-                {
-                    "permalink": post["data"]["permalink"],
-                    "subreddit": post["data"]["subreddit"],
-                    "title": post["data"]["title"],
-                    "url": post["data"]["url"],
-                }
-            )
+            # db.insert(
+            #     {
+            #         "permalink": post["data"]["permalink"],
+            #         "subreddit": post["data"]["subreddit"],
+            #         "title": post["data"]["title"],
+            #         "url": post["data"]["url"],
+            #     }
+            # )
+            db.insert(post["data"])
+
             inserted += 1
 
     return inserted, len(posts) - inserted
@@ -151,10 +153,10 @@ def get_saved_posts():
 
 
 if __name__ == "__main__":
-    wait_time = get_number_of_seconds_before_time(60 * 60 * 3)
-    logger.info("Sleeping for {0} seconds until 3:00 UTC.".format(wait_time))
-
-    sleep(wait_time)
+    # wait_time = get_number_of_seconds_before_time(60 * 60 * 3)
+    # logger.info("Sleeping for {0} seconds until 3:00 UTC.".format(wait_time))
+    #
+    # sleep(wait_time)
 
     while True:
         get_saved_posts()
