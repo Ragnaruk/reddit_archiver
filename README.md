@@ -10,6 +10,7 @@
     * [Docker](#Docker)
     * [No Docker](#No-Docker)
 * [Logging](#Logging)
+* [Data Storage](#Data-Storage)
 
 ## Description
 A telegram bot created to sidestep 1000 saved posts limit on Reddit.
@@ -60,3 +61,8 @@ python ./src/bot.py
 Default path: `/data/logs/`.
 
 File rotation happens every midnight UTC.
+
+## Data Storage
+Data is stored in `.json` object via TinyDB library.
+
+This is a temporary measure and will be changed when something more than minor problems crop up.
