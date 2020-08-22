@@ -21,14 +21,17 @@ from src.utils import get_logger, get_split_message
 try:
     from data.config import BOT_TOKEN, BOT_ALLOWED_PEOPLE, PATH_PERSISTENCE, PATH_DB
 except ImportError:
+    from pathlib import Path
+
     # Bot token
     BOT_TOKEN = ""
 
     # Path for db
-    PATH_DB = ""
+    PATH_DB = Path().cwd() / "data" / "db.json"
+    PATH_DB.mkdir(parents=True, exist_ok=True)
 
     # Path for persistence token
-    PATH_PERSISTENCE = ""
+    PATH_PERSISTENCE = Path().cwd() / "data" / "persistence.pickle"
 
     # Integer or list of integers (User IDs)
     BOT_ALLOWED_PEOPLE = []
