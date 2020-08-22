@@ -1,0 +1,4 @@
+tinydb
+requests
+black
+python-telegram-bot
