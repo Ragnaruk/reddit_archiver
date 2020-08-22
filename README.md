@@ -65,4 +65,6 @@ File rotation happens every midnight UTC.
 ## Data Storage
 Data is stored in `.json` object via TinyDB library.
 
+Negatives include: can't be safely accessed from multiple threads, RAM usage.
+
 This is a temporary measure and will be changed when something more than minor problems crop up.
