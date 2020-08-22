@@ -1,0 +1,16 @@
+version: '3'
+services:
+  reddit_archiver:
+    build:
+      context: .
+    image: ragnaruk/reddit_archiver:latest
+    volumes:
+      - ./data:/reddit_archiver/data
+    restart: always
+    command: ['python', './src/reddit.py']
+  reddit_archiver_bot:
+    image: ragnaruk/reddit_archiver:latest
+    volumes:
+      - ./data:/reddit_archiver/data
+    restart: always
+    command: ['python', './src/bot.py']
