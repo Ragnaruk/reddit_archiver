@@ -165,11 +165,13 @@ def subreddit_posts(update, context):
     message = (
         "<b>Subreddit:</b> r/{0}\n"
         "<b>Title:</b> {1}\n"
-        "<b>URL:</b> {2}\n"
-        "<b>Number:</b> {3}/{4}".format(
+        "<b>Direct URL:</b> {2}\n"
+        "<b>Reddit URL:</b> https://reddit.com{3}\n"
+        "<b>Number:</b> {4}/{5}".format(
             posts[post_number]["subreddit"],
             posts[post_number]["title"],
             posts[post_number]["url"],
+            posts[post_number]["permalink"],
             post_number + 1,
             len(posts),
         )
@@ -195,8 +197,16 @@ def random_post(update, context):
     post_number = random.randint(1, len(db))
     post = db.get(doc_id=post_number)
 
-    message = "<b>Subreddit:</b> r/{0}\n<b>Title:</b> {1}\n<b>URL:</b> {2}".format(
-        post["subreddit"], post["title"], post["url"]
+    message = (
+        "<b>Subreddit:</b> r/{0}\n"
+        "<b>Title:</b> {1}\n"
+        "<b>Direct URL:</b> {2}\n"
+        "<b>Reddit URL:</b> https://reddit.com{3}\n".format(
+            post["subreddit"],
+            post["title"],
+            post["url"],
+            post["permalink"],
+        )
     )
 
     update.message.reply_text(
