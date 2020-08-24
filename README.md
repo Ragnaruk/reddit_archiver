@@ -34,14 +34,20 @@ PATH_DB = PATH_DIRECTORY / "db.json"
 PATH_PERSISTENCE = PATH_DIRECTORY / "persistence.pickle"
 
 # Reddit
+
+# Bot name - "<platform>:<name>:v<version> (by /u/<username>)"
 USER_AGENT = ""
+# Reddit client id/secret
 HTTP_AUTH_LOGIN = ""
 HTTP_AUTH_PASSWORD = ""
+# Reddit login/password
 REDDIT_LOGIN = ""
 REDDIT_PASSWORD = ""
 
 # Telegram
+
 BOT_TOKEN = ""
+# Integer or list of integers (User IDs)
 BOT_ALLOWED_PEOPLE = []
 ```
 
