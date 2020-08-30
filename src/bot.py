@@ -120,13 +120,13 @@ def subreddits(update, context):
         else:
             subreddits[subreddit_name] = 1
 
-    sorted_subreddits = {
-        k: v for k, v in sorted(subreddits.items(), key=lambda item: item[1])
-    }
+    sorted_subreddits = [
+        (k, v) for k, v in sorted(subreddits.items(), key=lambda item: item[0])
+    ]
 
     message = "<b>List of subreddits:</b>\n\n"
 
-    for key, value in sorted_subreddits.items():
+    for key, value in sorted_subreddits:
         message += "/{0}: <b>{1}</b> posts.\n".format(key, value)
 
     for chunk in get_split_message(message):
