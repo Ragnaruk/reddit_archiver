@@ -153,8 +153,8 @@ def get_saved_posts():
 
 
 if __name__ == "__main__":
-    wait_time = get_number_of_seconds_before_time(60 * 60 * 3)
-    logger.info("Sleeping for {0} seconds until 3:00 UTC.".format(wait_time))
+    wait_time = get_number_of_seconds_before_time(60 * 60 * 16)
+    logger.info("Sleeping for {0} seconds until 16:00 UTC.".format(wait_time))
 
     sleep(wait_time)
 
