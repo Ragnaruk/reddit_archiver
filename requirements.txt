@@ -1,4 +1,4 @@
-tinydb
-requests
-black
-python-telegram-bot
+tinydb==4.8.0
+requests==2.31.0
+black==24.2.0
+python-telegram-bot==20.8

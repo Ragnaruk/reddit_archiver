@@ -1,25 +1,18 @@
 import json
 import random
 from functools import wraps
-from telegram import (
-    ReplyKeyboardRemove,
-    ReplyKeyboardMarkup,
-    ParseMode,
-)
-from telegram.ext import (
-    Updater,
-    CommandHandler,
-    ConversationHandler,
-    MessageHandler,
-    Filters,
-    PicklePersistence,
-)
+
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
+from telegram.constants import ParseMode
+from telegram.ext import (CommandHandler, ConversationHandler,
+                          MessageHandler, PicklePersistence, filters, Application, ContextTypes)
 from tinydb import TinyDB, where
+
 from src.utils import get_logger, get_split_message
 
-
 try:
-    from data.config import BOT_TOKEN, BOT_ALLOWED_PEOPLE, PATH_PERSISTENCE, PATH_DB
+    from data.config import (BOT_ALLOWED_PEOPLE, BOT_TOKEN, PATH_DB,
+                             PATH_PERSISTENCE)
 except ImportError:
     from pathlib import Path
 
@@ -36,10 +29,7 @@ except ImportError:
     # Integer or list of integers (User IDs)
     BOT_ALLOWED_PEOPLE = []
 
-
 logger = get_logger("reddit_archiver_bot", file_name="reddit_archiver_bot.log")
-random.seed()
-
 
 def bot_step(save_step=True, reset_steps=False):
     """
@@ -51,7 +41,7 @@ def bot_step(save_step=True, reset_steps=False):
 
     def decorator(func):
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        async def wrapper(*args, **kwargs):
             update, context = args
 
             message = {
@@ -70,14 +60,14 @@ def bot_step(save_step=True, reset_steps=False):
             elif save_step and context.user_data["steps"][-1] != func.__name__:
                 context.user_data["steps"].append(func.__name__)
 
-            return func(*args, **kwargs)
+            return await func(*args, **kwargs)
 
         return wrapper
 
     return decorator
 
 
-def back(update, context):
+async def back(update: Update, context: ContextTypes.DEFAULT_TYPE):
     steps = context.user_data["steps"]
     methods = globals().copy()
 
@@ -85,15 +75,15 @@ def back(update, context):
     if steps:
         name = steps.pop()
 
-    return methods[name](update, context)
+    return await methods[name](update, context)
 
 
 @bot_step(reset_steps=True)
-def start(update, context):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [["Subreddits", "Random Post"]]
     reply_markup = ReplyKeyboardMarkup(keyboard)
 
-    update.message.reply_text(
+    await update.message.reply_text(
         "Welcome to Reddit Archiver Bot.",
         reply_markup=reply_markup,
         parse_mode=ParseMode.HTML,
@@ -103,7 +93,7 @@ def start(update, context):
 
 
 @bot_step()
-def subreddits(update, context):
+async def subreddits(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         ["Back"],
     ]
@@ -130,15 +120,17 @@ def subreddits(update, context):
         message += "/{0}: <b>{1}</b> posts.\n".format(key, value)
 
     for chunk in get_split_message(message):
-        update.message.reply_text(
-            chunk, reply_markup=reply_markup, parse_mode=ParseMode.HTML,
+        await update.message.reply_text(
+            chunk,
+            reply_markup=reply_markup,
+            parse_mode=ParseMode.HTML,
         )
 
     return 1
 
 
 @bot_step(save_step=False)
-def subreddit_posts(update, context):
+async def subreddit_posts(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         ["Next"],
         ["Back"],
@@ -177,15 +169,17 @@ def subreddit_posts(update, context):
         )
     )
 
-    update.message.reply_text(
-        message, reply_markup=reply_markup, parse_mode=ParseMode.HTML,
+    await update.message.reply_text(
+        message,
+        reply_markup=reply_markup,
+        parse_mode=ParseMode.HTML,
     )
 
     return 1
 
 
 @bot_step()
-def random_post(update, context):
+async def random_post(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         ["Random Post"],
         ["Back"],
@@ -209,51 +203,52 @@ def random_post(update, context):
         )
     )
 
-    update.message.reply_text(
-        message, reply_markup=reply_markup, parse_mode=ParseMode.HTML,
+    await update.message.reply_text(
+        message,
+        reply_markup=reply_markup,
+        parse_mode=ParseMode.HTML,
     )
 
     return 1
 
 
-def cancel(update, context):
-    update.message.reply_text("Goodbye.", reply_markup=ReplyKeyboardRemove())
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Goodbye.", reply_markup=ReplyKeyboardRemove())
 
     return ConversationHandler.END
 
 
 def main():
-    persistence = PicklePersistence(filename=PATH_PERSISTENCE)
-
-    updater = Updater(token=BOT_TOKEN, use_context=True, persistence=persistence,)
+    persistence = PicklePersistence(filepath=PATH_PERSISTENCE)
+    application = Application.builder().token(token=BOT_TOKEN).persistence(persistence=persistence).build()
 
     conversation_handler = ConversationHandler(
         entry_points=[
-            CommandHandler("start", start, Filters.user(user_id=BOT_ALLOWED_PEOPLE))
+            CommandHandler("start", start, filters.User(user_id=BOT_ALLOWED_PEOPLE))
         ],
         states={
             0: [
-                CommandHandler("start", start, Filters.user(user_id=BOT_ALLOWED_PEOPLE))
+                CommandHandler("start", start, filters.User(user_id=BOT_ALLOWED_PEOPLE))
             ],
             1: [
                 MessageHandler(
-                    Filters.user(user_id=BOT_ALLOWED_PEOPLE)
-                    & Filters.regex("^(Back)$"),
+                    filters.User(user_id=BOT_ALLOWED_PEOPLE)
+                    & filters.Regex("^(Back)$"),
                     back,
                 ),
                 MessageHandler(
-                    Filters.user(user_id=BOT_ALLOWED_PEOPLE)
-                    & (Filters.regex("^/\\w+$") | Filters.regex("^(Next)$")),
+                    filters.User(user_id=BOT_ALLOWED_PEOPLE)
+                    & (filters.Regex("^/\\w+$") | filters.Regex("^(Next)$")),
                     subreddit_posts,
                 ),
                 MessageHandler(
-                    Filters.user(user_id=BOT_ALLOWED_PEOPLE)
-                    & Filters.regex("^(Subreddits)$"),
+                    filters.User(user_id=BOT_ALLOWED_PEOPLE)
+                    & filters.Regex("^(Subreddits)$"),
                     subreddits,
                 ),
                 MessageHandler(
-                    Filters.user(user_id=BOT_ALLOWED_PEOPLE)
-                    & Filters.regex("^(Random Post)$"),
+                    filters.User(user_id=BOT_ALLOWED_PEOPLE)
+                    & filters.Regex("^(Random Post)$"),
                     random_post,
                 ),
             ],
@@ -264,10 +259,9 @@ def main():
         name="bot",
     )
 
-    updater.dispatcher.add_handler(conversation_handler)
+    application.add_handler(handler=conversation_handler)
 
-    updater.start_polling()
-    updater.idle()
+    application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
 if __name__ == "__main__":
